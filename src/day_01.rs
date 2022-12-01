@@ -75,15 +75,23 @@ const INPUT: &str = include_str!("../input/day_01");
 
 pub fn run() {
     let elves = load_calories(INPUT);
-    let biggest_total_calories: u32 = elves
-        .iter()
-        .map(|calories| calories.iter().sum())
-        .max()
-        .unwrap();
+    let mut elves_calories_totalled: Vec<u32> =
+        elves.iter().map(|calories| calories.iter().sum()).collect();
+    elves_calories_totalled.sort();
+    elves_calories_totalled.reverse();
+
+    let biggest_total_calories = elves_calories_totalled.get(0).unwrap();
 
     println!(
         "The calories carried by the Elf that is carrying the most is: {}",
         biggest_total_calories
+    );
+
+    let top_three_elves: u32 = elves_calories_totalled.iter().take(3).sum();
+
+    println!(
+        "The total calories carried by the top three Elves is: {}",
+        top_three_elves
     );
 }
 
