@@ -58,6 +58,46 @@
 const INPUT: &str = include_str!("../input/day_01");
 
 pub fn run() {
-    println!("Not implemented yet");
-    unimplemented!();
+    let elves = load_calories(INPUT);
+    let biggest_total_calories: u32 = elves
+        .iter()
+        .map(|calories| calories.iter().sum())
+        .max()
+        .unwrap();
+
+    println!(
+        "The calories carried by the Elf that is carrying the most is: {}",
+        biggest_total_calories
+    );
+}
+
+fn load_calories(input: &str) -> Vec<Vec<u32>> {
+    input
+        .split("\n\n")
+        .map(|elf| {
+            elf.lines()
+                .map(|food| food.parse())
+                .filter_map(Result::ok)
+                .collect()
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_load_calories() {
+        let input = "1000\n2000\n3000\n\n4000\n\n5000\n6000\n\n7000\n8000\n9000\n\n10000";
+
+        let expected = vec![
+            vec![1000, 2000, 3000],
+            vec![4000],
+            vec![5000, 6000],
+            vec![7000, 8000, 9000],
+            vec![10000],
+        ];
+        assert_eq!(load_calories(input), expected);
+    }
 }
