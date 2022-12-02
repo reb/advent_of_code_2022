@@ -52,3 +52,79 @@ pub fn run() {
     println!("Not implemented yet");
     unimplemented!();
 }
+
+#[derive(Debug, PartialEq)]
+enum Sign {
+    Rock,
+    Paper,
+    Scissors,
+}
+
+fn score_strategy(strategy: &Vec<(Sign, Sign)>) -> u32 {
+    strategy.iter().map(round_score).sum()
+}
+
+fn round_score((opponent_sign, own_sign): &(Sign, Sign)) -> u32 {
+    // first calculate score for the own sign
+    let mut score = match own_sign {
+        Sign::Rock => 1,
+        Sign::Paper => 2,
+        Sign::Scissors => 3,
+    };
+
+    // if it's draw add 3
+    if opponent_sign == own_sign {
+        score += 3;
+    }
+
+    // if it's a victory add 6
+    if opponent_sign == &Sign::Rock && own_sign == &Sign::Paper {
+        score += 6;
+    }
+    if opponent_sign == &Sign::Paper && own_sign == &Sign::Scissors {
+        score += 6;
+    }
+    if opponent_sign == &Sign::Scissors && own_sign == &Sign::Rock {
+        score += 6;
+    }
+
+    score
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_score_strategy() {
+        // For example, suppose you were given the following strategy guide:
+        //
+        // A Y
+        // B X
+        // C Z
+        //
+        // In this example, if you were to follow the strategy guide, you would get a total score of 15
+        // (8 + 1 + 6).
+        let strategy = vec![
+            (Sign::Rock, Sign::Paper),
+            (Sign::Paper, Sign::Rock),
+            (Sign::Scissors, Sign::Scissors),
+        ];
+
+        assert_eq!(score_strategy(&strategy), 15);
+    }
+
+    #[test]
+    fn test_round_score() {
+        // In the first round, your opponent will choose Rock (A), and you should choose Paper (Y).
+        // This ends in a win for you with a score of 8 (2 because you chose Paper + 6 because you
+        // won).
+        assert_eq!(round_score(&(Sign::Rock, Sign::Paper)), 8);
+        // In the second round, your opponent will choose Paper (B), and you should choose Rock (X).
+        // This ends in a loss for you with a score of 1 (1 + 0).
+        assert_eq!(round_score(&(Sign::Paper, Sign::Rock)), 1);
+        // The third round is a draw with both players choosing Scissors, giving you a score of
+        // 3 + 3 = 6.
+        assert_eq!(round_score(&(Sign::Scissors, Sign::Scissors)), 6);
+    }
+}
