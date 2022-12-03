@@ -45,19 +45,60 @@
 /// + 1 + 6).
 ///
 /// What would your total score be if everything goes exactly according to your strategy guide?
+use itertools::Itertools;
+use std::collections::HashMap;
 
 const INPUT: &str = include_str!("../input/day_02");
 
 pub fn run() {
-    println!("Not implemented yet");
-    unimplemented!();
+    let guide = load_guide(INPUT);
+
+    let mut key = HashMap::new();
+    key.insert('A', Sign::Rock);
+    key.insert('B', Sign::Paper);
+    key.insert('C', Sign::Scissors);
+    key.insert('X', Sign::Rock);
+    key.insert('Y', Sign::Paper);
+    key.insert('Z', Sign::Scissors);
+
+    let strategy = translate_guide(&guide, &key);
+
+    let score = score_strategy(&strategy);
+    println!(
+        "The total score according to the strategy guide is: {}",
+        score
+    );
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 enum Sign {
     Rock,
     Paper,
     Scissors,
+}
+
+fn translate_guide(guide: &Vec<(char, char)>, key: &HashMap<char, Sign>) -> Vec<(Sign, Sign)> {
+    guide
+        .iter()
+        .map(|(opponent, own)| (*key.get(opponent).unwrap(), *key.get(own).unwrap()))
+        .collect()
+}
+
+fn load_guide(input: &str) -> Vec<(char, char)> {
+    input
+        .lines()
+        .map(|line| {
+            line.split_whitespace()
+                .map(|character| {
+                    character
+                        .chars()
+                        .next()
+                        .expect("There should be a character")
+                })
+                .collect_tuple()
+        })
+        .flatten()
+        .collect()
 }
 
 fn score_strategy(strategy: &Vec<(Sign, Sign)>) -> u32 {
@@ -95,6 +136,14 @@ fn round_score((opponent_sign, own_sign): &(Sign, Sign)) -> u32 {
 mod tests {
     use super::*;
 
+    #[test]
+    fn test_load_guide() {
+        let input = "A Y\nB X\nC Z";
+
+        let expected = vec![('A', 'Y'), ('B', 'X'), ('C', 'Z')];
+
+        assert_eq!(load_guide(input), expected);
+    }
     #[test]
     fn test_score_strategy() {
         // For example, suppose you were given the following strategy guide:
