@@ -47,10 +47,82 @@
 ///
 /// Find the item type that appears in both compartments of each rucksack. What is the sum of the
 /// priorities of those item types?
+use std::collections::HashSet;
 
 const INPUT: &str = include_str!("../input/day_03");
 
 pub fn run() {
     println!("Not implemented yet");
     unimplemented!();
+}
+
+type Item = char;
+
+fn find_duplicate_item(rucksack: &Vec<Item>) -> &Item {
+    let midway = rucksack.len() / 2;
+
+    // create a set of the items in the first compartment
+
+    let mut rucksack_iter = rucksack.iter();
+    let first_compartment: HashSet<&char> = rucksack_iter.by_ref().take(midway).collect();
+
+    rucksack_iter
+        .find(|item| first_compartment.contains(item))
+        .expect("There should be a duplicate item")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_find_duplicate_item_1() {
+        // The first rucksack contains the items vJrwpWtwJgWrhcsFMMfFFhFp, which means its first
+        // compartment contains the items vJrwpWtwJgWr, while the second compartment contains the
+        // items hcsFMMfFFhFp. The only item type that appears in both compartments is lowercase p.
+        let input = "vJrwpWtwJgWrhcsFMMfFFhFp".chars().collect();
+
+        assert_eq!(find_duplicate_item(&input), &'p');
+    }
+
+    #[test]
+    fn test_find_duplicate_item_2() {
+        // The second rucksack's compartments contain jqHRNqRjqzjGDLGL and rsFMfFZSrLrFZsSL. The
+        // only item type that appears in both compartments is uppercase L.
+        let input = "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL".chars().collect();
+
+        assert_eq!(find_duplicate_item(&input), &'L');
+    }
+
+    #[test]
+    fn test_find_duplicate_item_3() {
+        // The third rucksack's compartments contain PmmdzqPrV and vPwwTWBwg; the only common item
+        // type is uppercase P.
+        let input = "PmmdzqPrVvPwwTWBwg".chars().collect();
+
+        assert_eq!(find_duplicate_item(&input), &'P');
+    }
+
+    #[test]
+    fn test_find_duplicate_item_4() {
+        // The fourth rucksack's compartments only share item type v.
+        let input = "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn".chars().collect();
+
+        assert_eq!(find_duplicate_item(&input), &'v');
+    }
+
+    #[test]
+    fn test_find_duplicate_item_5() {
+        // The fifth rucksack's compartments only share item type t.
+        let input = "ttgJtRGJQctTZtZT".chars().collect();
+
+        assert_eq!(find_duplicate_item(&input), &'t');
+    }
+    #[test]
+    fn test_find_duplicate_item_6() {
+        // The sixth rucksack's compartments only share item type s.
+        let input = "CrZsJsPPZsGzwwsLwLmpwMDw".chars().collect();
+
+        assert_eq!(find_duplicate_item(&input), &'s');
+    }
 }
