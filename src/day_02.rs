@@ -191,13 +191,7 @@ fn round_score((opponent_sign, own_sign): &(Sign, Sign)) -> u32 {
     }
 
     // if it's a victory add 6
-    if opponent_sign == &Sign::Rock && own_sign == &Sign::Paper {
-        score += 6;
-    }
-    if opponent_sign == &Sign::Paper && own_sign == &Sign::Scissors {
-        score += 6;
-    }
-    if opponent_sign == &Sign::Scissors && own_sign == &Sign::Rock {
+    if &opponent_sign.loses_to() == own_sign {
         score += 6;
     }
 
