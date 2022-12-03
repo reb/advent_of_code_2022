@@ -76,15 +76,7 @@ const INPUT: &str = include_str!("../input/day_02");
 pub fn run() {
     let guide = load_guide(INPUT);
 
-    let mut key = HashMap::new();
-    key.insert('A', Sign::Rock);
-    key.insert('B', Sign::Paper);
-    key.insert('C', Sign::Scissors);
-    key.insert('X', Sign::Rock);
-    key.insert('Y', Sign::Paper);
-    key.insert('Z', Sign::Scissors);
-
-    let strategy = translate_guide(&guide, &key);
+    let strategy = translate_guide(&guide);
 
     let score = score_strategy(&strategy);
     println!(
@@ -100,7 +92,14 @@ enum Sign {
     Scissors,
 }
 
-fn translate_guide(guide: &Vec<(char, char)>, key: &HashMap<char, Sign>) -> Vec<(Sign, Sign)> {
+fn translate_guide(guide: &Vec<(char, char)>) -> Vec<(Sign, Sign)> {
+    let mut key = HashMap::new();
+    key.insert('A', Sign::Rock);
+    key.insert('B', Sign::Paper);
+    key.insert('C', Sign::Scissors);
+    key.insert('X', Sign::Rock);
+    key.insert('Y', Sign::Paper);
+    key.insert('Z', Sign::Scissors);
     guide
         .iter()
         .map(|(opponent, own)| (*key.get(opponent).unwrap(), *key.get(own).unwrap()))
