@@ -83,6 +83,14 @@ pub fn run() {
         "The total score according to the strategy guide is: {}",
         score
     );
+
+    let new_strategy = decrypt_guide(&guide);
+
+    let new_score = score_strategy(&new_strategy);
+    println!(
+        "The total score using the new instructions according to the strategy guide is: {}",
+        new_score
+    );
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -90,6 +98,24 @@ enum Sign {
     Rock,
     Paper,
     Scissors,
+}
+
+impl Sign {
+    fn loses_to(&self) -> Sign {
+        match self {
+            Sign::Rock => Sign::Paper,
+            Sign::Paper => Sign::Scissors,
+            Sign::Scissors => Sign::Rock,
+        }
+    }
+
+    fn wins_from(&self) -> Sign {
+        match self {
+            Sign::Rock => Sign::Scissors,
+            Sign::Paper => Sign::Rock,
+            Sign::Scissors => Sign::Paper,
+        }
+    }
 }
 
 fn translate_guide(guide: &Vec<(char, char)>) -> Vec<(Sign, Sign)> {
@@ -103,6 +129,30 @@ fn translate_guide(guide: &Vec<(char, char)>) -> Vec<(Sign, Sign)> {
     guide
         .iter()
         .map(|(opponent, own)| (*key.get(opponent).unwrap(), *key.get(own).unwrap()))
+        .collect()
+}
+
+fn decrypt_guide(guide: &Vec<(char, char)>) -> Vec<(Sign, Sign)> {
+    guide
+        .iter()
+        .map(|(opponent, own)| {
+            let opponent_sign = match opponent {
+                'A' => Sign::Rock,
+                'B' => Sign::Paper,
+                'C' => Sign::Scissors,
+                c => panic!("Got an unexpected character: '{}'", c),
+            };
+            let own_sign = match own {
+                // X -> lose
+                'X' => opponent_sign.wins_from(),
+                // Y -> draw
+                'Y' => opponent_sign,
+                // Z -> win
+                'Z' => opponent_sign.loses_to(),
+                c => panic!("Got an unexpected character: '{}'", c),
+            };
+            (opponent_sign, own_sign)
+        })
         .collect()
 }
 
@@ -166,6 +216,23 @@ mod tests {
 
         assert_eq!(load_guide(input), expected);
     }
+
+    #[test]
+    fn test_decrypt_guide() {
+        // The Elf finishes helping with the tent and sneaks back over to you. "Anyway, the second
+        // column says how the round needs to end: X means you need to lose, Y means you need to end
+        // the round in a draw, and Z means you need to win. Good luck!"
+        let input = vec![('A', 'Y'), ('B', 'X'), ('C', 'Z')];
+
+        let expected = vec![
+            (Sign::Rock, Sign::Rock),
+            (Sign::Paper, Sign::Rock),
+            (Sign::Scissors, Sign::Rock),
+        ];
+
+        assert_eq!(decrypt_guide(&input), expected);
+    }
+
     #[test]
     fn test_score_strategy() {
         // For example, suppose you were given the following strategy guide:
