@@ -88,6 +88,7 @@
 ///
 /// Find the item type that corresponds to the badges of each three-Elf group. What is the sum of
 /// the priorities of those item types?
+use itertools::Itertools;
 use std::collections::HashSet;
 
 const INPUT: &str = include_str!("../input/day_03");
@@ -104,6 +105,17 @@ pub fn run() {
     println!(
         "The sum of the priorities of the item types found in both compartments is: {}",
         total_priorities
+    );
+
+    let badge_priorities: u32 = rucksacks
+        .chunks(3)
+        .map(find_badge)
+        .map(convert_to_priority)
+        .sum();
+
+    println!(
+        "The sum of the priorities of the badges of each three-Elf group is: {}",
+        badge_priorities
     );
 }
 
@@ -132,6 +144,20 @@ fn find_duplicate_item(rucksack: &Vec<Item>) -> &Item {
     rucksack_iter
         .find(|item| first_compartment.contains(item))
         .expect("There should be a duplicate item")
+}
+
+fn find_badge(rucksacks: &[Vec<Item>]) -> &Item {
+    let badge_set: HashSet<&Item> = rucksacks
+        .iter()
+        .map(|rucksack| rucksack.iter().collect())
+        .reduce(|previous: HashSet<&Item>, next| previous.intersection(&next).map(|i| *i).collect())
+        .unwrap();
+    assert_eq!(
+        badge_set.len(),
+        1,
+        "There is not exactly 1 item matching in all rucksacks"
+    );
+    badge_set.iter().next().unwrap()
 }
 
 #[cfg(test)]
@@ -199,5 +225,30 @@ mod tests {
         assert_eq!(convert_to_priority(&'v'), 22);
         assert_eq!(convert_to_priority(&'t'), 20);
         assert_eq!(convert_to_priority(&'s'), 19);
+    }
+
+    #[test]
+    fn test_find_badge_1() {
+        // In the first group, the only item type that appears in all three rucksacks is lowercase
+        // r; this must be their badges.
+        let input = [
+            "vJrwpWtwJgWrhcsFMMfFFhFp".chars().collect(),
+            "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL".chars().collect(),
+            "PmmdzqPrVvPwwTWBwg".chars().collect(),
+        ];
+
+        assert_eq!(find_badge(&input), &'r');
+    }
+
+    #[test]
+    fn test_find_badge_2() {
+        // In the second group, their badge item type must be Z.
+        let input = [
+            "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn".chars().collect(),
+            "ttgJtRGJQctTZtZT".chars().collect(),
+            "CrZsJsPPZsGzwwsLwLmpwMDw".chars().collect(),
+        ];
+
+        assert_eq!(find_badge(&input), &'Z');
     }
 }
