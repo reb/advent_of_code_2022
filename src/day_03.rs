@@ -52,11 +52,33 @@ use std::collections::HashSet;
 const INPUT: &str = include_str!("../input/day_03");
 
 pub fn run() {
-    println!("Not implemented yet");
-    unimplemented!();
+    let rucksacks = load_rucksacks(INPUT);
+
+    let total_priorities: u32 = rucksacks
+        .iter()
+        .map(find_duplicate_item)
+        .map(convert_to_priority)
+        .sum();
+
+    println!(
+        "The sum of the priorities of the item types found in both compartments is: {}",
+        total_priorities
+    );
 }
 
 type Item = char;
+
+fn load_rucksacks(input: &str) -> Vec<Vec<Item>> {
+    input.lines().map(|line| line.chars().collect()).collect()
+}
+
+fn convert_to_priority(item: &Item) -> u32 {
+    if item.is_uppercase() {
+        *item as u32 - 'A' as u32 + 27
+    } else {
+        *item as u32 - 'a' as u32 + 1
+    }
+}
 
 fn find_duplicate_item(rucksack: &Vec<Item>) -> &Item {
     let midway = rucksack.len() / 2;
@@ -124,5 +146,17 @@ mod tests {
         let input = "CrZsJsPPZsGzwwsLwLmpwMDw".chars().collect();
 
         assert_eq!(find_duplicate_item(&input), &'s');
+    }
+
+    #[test]
+    fn test_convert_to_priority() {
+        // In the above example, the priority of the item type that appears in both compartments of
+        // each rucksack is 16 (p), 38 (L), 42 (P), 22 (v), 20 (t), and 19 (s)
+        assert_eq!(convert_to_priority(&'p'), 16);
+        assert_eq!(convert_to_priority(&'L'), 38);
+        assert_eq!(convert_to_priority(&'P'), 42);
+        assert_eq!(convert_to_priority(&'v'), 22);
+        assert_eq!(convert_to_priority(&'t'), 20);
+        assert_eq!(convert_to_priority(&'s'), 19);
     }
 }
