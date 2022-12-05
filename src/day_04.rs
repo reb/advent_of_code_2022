@@ -61,3 +61,69 @@ pub fn run() {
     println!("Not implemented yet");
     unimplemented!();
 }
+
+type Assignment = (u32, u32);
+
+fn fully_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignment)) -> bool {
+    if a_begin >= b_begin && a_end <= b_end {
+        return true;
+    }
+    if a_begin <= b_begin && a_end >= b_end {
+        return true;
+    }
+
+    false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fully_overlaps_1() {
+        // 2-4,6-8
+        let input = ((2, 4), (6, 8));
+
+        assert!(!fully_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_fully_overlaps_2() {
+        // 2-3,4-5
+        let input = ((2, 3), (4, 5));
+
+        assert!(!fully_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_fully_overlaps_3() {
+        // 5-7,7-9
+        let input = ((5, 7), (7, 9));
+
+        assert!(!fully_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_fully_overlaps_4() {
+        // 2-8,3-7
+        let input = ((2, 8), (3, 7));
+
+        assert!(fully_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_fully_overlaps_5() {
+        // 6-6,4-6
+        let input = ((6, 6), (4, 6));
+
+        assert!(fully_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_fully_overlaps_6() {
+        // 2-6,4-8
+        let input = ((2, 6), (4, 8));
+
+        assert!(!fully_overlaps(&&input))
+    }
+}
