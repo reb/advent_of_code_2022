@@ -54,15 +54,44 @@
 /// In this example, there are 2 such pairs.
 ///
 /// In how many assignment pairs does one range fully contain the other?
+use itertools::Itertools;
 
 const INPUT: &str = include_str!("../input/day_04");
 
 pub fn run() {
-    println!("Not implemented yet");
-    unimplemented!();
+    let assignments = load_assignments(INPUT);
+
+    let fully_contained_pairs = assignments.iter().filter(fully_overlaps).count();
+    println!(
+        "The amount of assignment pairs that fully contain the other is: {}",
+        fully_contained_pairs
+    );
 }
 
 type Assignment = (u32, u32);
+
+fn load_assignments(input: &str) -> Vec<(Assignment, Assignment)> {
+    input
+        .lines()
+        .map(|line| {
+            line.split(',')
+                .take(2)
+                .map(convert_to_assignment)
+                .collect_tuple()
+                .unwrap()
+        })
+        .collect()
+}
+
+fn convert_to_assignment(assignment: &str) -> Assignment {
+    assignment
+        .split('-')
+        .take(2)
+        .map(str::parse)
+        .filter_map(Result::ok)
+        .collect_tuple()
+        .unwrap()
+}
 
 fn fully_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignment)) -> bool {
     if a_begin >= b_begin && a_end <= b_end {
@@ -78,6 +107,21 @@ fn fully_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignmen
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_load_assignments() {
+        let input = "2-4,6-8";
+        let expected = vec![((2, 4), (6, 8))];
+
+        assert_eq!(load_assignments(input), expected);
+    }
+
+    #[test]
+    fn test_convert_to_assignment() {
+        let input = "2-4";
+
+        assert_eq!(convert_to_assignment(input), (2, 4));
+    }
 
     #[test]
     fn test_fully_overlaps_1() {
