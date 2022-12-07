@@ -91,7 +91,23 @@ pub fn run() {
     );
 }
 
-type Assignment = (u32, u32);
+#[derive(Debug, PartialEq)]
+struct Assignment {
+    begin: u32,
+    end: u32,
+}
+
+impl Assignment {
+    fn new((begin, end): (u32, u32)) -> Assignment {
+        Assignment { begin, end }
+    }
+    fn covers(&self, t: u32) -> bool {
+        self.begin <= t && self.end >= t
+    }
+    fn contains(&self, other: &Assignment) -> bool {
+        other.begin >= self.begin && other.end <= self.end
+    }
+}
 
 fn load_assignments(input: &str) -> Vec<(Assignment, Assignment)> {
     input
@@ -107,41 +123,23 @@ fn load_assignments(input: &str) -> Vec<(Assignment, Assignment)> {
 }
 
 fn convert_to_assignment(assignment: &str) -> Assignment {
-    assignment
-        .split('-')
-        .take(2)
-        .map(str::parse)
-        .filter_map(Result::ok)
-        .collect_tuple()
-        .unwrap()
+    Assignment::new(
+        assignment
+            .split('-')
+            .take(2)
+            .map(str::parse)
+            .filter_map(Result::ok)
+            .collect_tuple()
+            .unwrap(),
+    )
 }
 
-fn fully_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignment)) -> bool {
-    if a_begin >= b_begin && a_end <= b_end {
-        return true;
-    }
-    if a_begin <= b_begin && a_end >= b_end {
-        return true;
-    }
-
-    false
+fn fully_overlaps((a, b): &&(Assignment, Assignment)) -> bool {
+    a.contains(&b) || b.contains(&a)
 }
 
-fn partially_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignment)) -> bool {
-    if a_begin >= b_begin && a_begin <= b_end {
-        return true;
-    }
-    if a_end >= b_begin && a_end <= b_end {
-        return true;
-    }
-    if b_begin >= a_begin && b_begin <= a_end {
-        return true;
-    }
-    if b_end >= a_begin && b_end <= a_end {
-        return true;
-    }
-
-    false
+fn partially_overlaps((a, b): &&(Assignment, Assignment)) -> bool {
+    a.covers(b.begin) || a.covers(b.end) || b.covers(a.begin) || b.covers(a.end)
 }
 
 #[cfg(test)]
@@ -151,7 +149,7 @@ mod tests {
     #[test]
     fn test_load_assignments() {
         let input = "2-4,6-8";
-        let expected = vec![((2, 4), (6, 8))];
+        let expected = vec![(Assignment::new((2, 4)), Assignment::new((6, 8)))];
 
         assert_eq!(load_assignments(input), expected);
     }
@@ -160,13 +158,13 @@ mod tests {
     fn test_convert_to_assignment() {
         let input = "2-4";
 
-        assert_eq!(convert_to_assignment(input), (2, 4));
+        assert_eq!(convert_to_assignment(input), Assignment::new((2, 4)));
     }
 
     #[test]
     fn test_fully_overlaps_1() {
         // 2-4,6-8
-        let input = ((2, 4), (6, 8));
+        let input = (Assignment::new((2, 4)), Assignment::new((6, 8)));
 
         assert!(!fully_overlaps(&&input))
     }
@@ -174,7 +172,7 @@ mod tests {
     #[test]
     fn test_fully_overlaps_2() {
         // 2-3,4-5
-        let input = ((2, 3), (4, 5));
+        let input = (Assignment::new((2, 3)), Assignment::new((4, 5)));
 
         assert!(!fully_overlaps(&&input))
     }
@@ -182,7 +180,7 @@ mod tests {
     #[test]
     fn test_fully_overlaps_3() {
         // 5-7,7-9
-        let input = ((5, 7), (7, 9));
+        let input = (Assignment::new((5, 7)), Assignment::new((7, 9)));
 
         assert!(!fully_overlaps(&&input))
     }
@@ -190,7 +188,7 @@ mod tests {
     #[test]
     fn test_fully_overlaps_4() {
         // 2-8,3-7
-        let input = ((2, 8), (3, 7));
+        let input = (Assignment::new((2, 8)), Assignment::new((3, 7)));
 
         assert!(fully_overlaps(&&input))
     }
@@ -198,7 +196,7 @@ mod tests {
     #[test]
     fn test_fully_overlaps_5() {
         // 6-6,4-6
-        let input = ((6, 6), (4, 6));
+        let input = (Assignment::new((6, 6)), Assignment::new((4, 6)));
 
         assert!(fully_overlaps(&&input))
     }
@@ -206,7 +204,7 @@ mod tests {
     #[test]
     fn test_fully_overlaps_6() {
         // 2-6,4-8
-        let input = ((2, 6), (4, 8));
+        let input = (Assignment::new((2, 6)), Assignment::new((4, 8)));
 
         assert!(!fully_overlaps(&&input))
     }
@@ -214,7 +212,7 @@ mod tests {
     #[test]
     fn test_partially_overlaps_1() {
         // 2-4,6-8
-        let input = ((2, 4), (6, 8));
+        let input = (Assignment::new((2, 4)), Assignment::new((6, 8)));
 
         assert!(!partially_overlaps(&&input))
     }
@@ -222,7 +220,7 @@ mod tests {
     #[test]
     fn test_partially_overlaps_2() {
         // 2-3,4-5
-        let input = ((2, 3), (4, 5));
+        let input = (Assignment::new((2, 3)), Assignment::new((4, 5)));
 
         assert!(!partially_overlaps(&&input))
     }
@@ -230,7 +228,7 @@ mod tests {
     #[test]
     fn test_partially_overlaps_3() {
         // 5-7,7-9
-        let input = ((5, 7), (7, 9));
+        let input = (Assignment::new((5, 7)), Assignment::new((7, 9)));
 
         assert!(partially_overlaps(&&input))
     }
@@ -238,7 +236,7 @@ mod tests {
     #[test]
     fn test_partially_overlaps_4() {
         // 2-8,3-7
-        let input = ((2, 8), (3, 7));
+        let input = (Assignment::new((2, 8)), Assignment::new((3, 7)));
 
         assert!(partially_overlaps(&&input))
     }
@@ -246,7 +244,7 @@ mod tests {
     #[test]
     fn test_partially_overlaps_5() {
         // 6-6,4-6
-        let input = ((6, 6), (4, 6));
+        let input = (Assignment::new((6, 6)), Assignment::new((4, 6)));
 
         assert!(partially_overlaps(&&input))
     }
@@ -254,7 +252,7 @@ mod tests {
     #[test]
     fn test_partially_overlaps_6() {
         // 2-6,4-8
-        let input = ((2, 6), (4, 8));
+        let input = (Assignment::new((2, 6)), Assignment::new((4, 8)));
 
         assert!(partially_overlaps(&&input))
     }
