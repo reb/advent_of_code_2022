@@ -83,6 +83,12 @@ pub fn run() {
         "The amount of assignment pairs that fully contain the other is: {}",
         fully_contained_pairs
     );
+
+    let partially_contained_pairs = assignments.iter().filter(partially_overlaps).count();
+    println!(
+        "The amount of assignment pairs that fully contain the other is: {}",
+        partially_contained_pairs
+    );
 }
 
 type Assignment = (u32, u32);
@@ -115,6 +121,23 @@ fn fully_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignmen
         return true;
     }
     if a_begin <= b_begin && a_end >= b_end {
+        return true;
+    }
+
+    false
+}
+
+fn partially_overlaps(((a_begin, a_end), (b_begin, b_end)): &&(Assignment, Assignment)) -> bool {
+    if a_begin >= b_begin && a_begin <= b_end {
+        return true;
+    }
+    if a_end >= b_begin && a_end <= b_end {
+        return true;
+    }
+    if b_begin >= a_begin && b_begin <= a_end {
+        return true;
+    }
+    if b_end >= a_begin && b_end <= a_end {
         return true;
     }
 
@@ -186,5 +209,53 @@ mod tests {
         let input = ((2, 6), (4, 8));
 
         assert!(!fully_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_partially_overlaps_1() {
+        // 2-4,6-8
+        let input = ((2, 4), (6, 8));
+
+        assert!(!partially_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_partially_overlaps_2() {
+        // 2-3,4-5
+        let input = ((2, 3), (4, 5));
+
+        assert!(!partially_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_partially_overlaps_3() {
+        // 5-7,7-9
+        let input = ((5, 7), (7, 9));
+
+        assert!(partially_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_partially_overlaps_4() {
+        // 2-8,3-7
+        let input = ((2, 8), (3, 7));
+
+        assert!(partially_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_partially_overlaps_5() {
+        // 6-6,4-6
+        let input = ((6, 6), (4, 6));
+
+        assert!(partially_overlaps(&&input))
+    }
+
+    #[test]
+    fn test_partially_overlaps_6() {
+        // 2-6,4-8
+        let input = ((2, 6), (4, 8));
+
+        assert!(partially_overlaps(&&input))
     }
 }
