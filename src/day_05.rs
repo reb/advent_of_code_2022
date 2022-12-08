@@ -76,3 +76,130 @@ pub fn run() {
     println!("Not implemented yet");
     unimplemented!();
 }
+
+type Stack = Vec<char>;
+
+struct Instruction {
+    amount: usize,
+    from: usize,
+    to: usize,
+}
+
+impl Instruction {
+    fn apply(&self, mut stacks: Vec<Stack>) -> Vec<Stack> {
+        for _ in 0..self.amount {
+            // moving a marked crate from the 'from' to the 'to' stack
+            let marked_crate = stacks[self.from - 1]
+                .pop()
+                .expect("There was no crate left in the stack");
+            stacks[self.to - 1].push(marked_crate);
+        }
+        stacks
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_apply_instruction_1() {
+        //     [D]
+        // [N] [C]
+        // [Z] [M] [P]
+        //  1   2   3
+        let input = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
+
+        // move 1 from 2 to 1
+        let instruction = Instruction {
+            amount: 1,
+            from: 2,
+            to: 1,
+        };
+
+        // [D]
+        // [N] [C]
+        // [Z] [M] [P]
+        //  1   2   3
+        let expected = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
+
+        assert_eq!(instruction.apply(input), expected);
+    }
+
+    #[test]
+    fn test_apply_instruction_2() {
+        // [D]
+        // [N] [C]
+        // [Z] [M] [P]
+        //  1   2   3
+        let input = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
+
+        // move 3 from 1 to 3
+        let instruction = Instruction {
+            amount: 3,
+            from: 1,
+            to: 3,
+        };
+
+        //         [Z]
+        //         [N]
+        //     [C] [D]
+        //     [M] [P]
+        //  1   2   3
+        let expected = vec![vec![], vec!['M', 'C'], vec!['P', 'D', 'N', 'Z']];
+
+        assert_eq!(instruction.apply(input), expected);
+    }
+
+    #[test]
+    fn test_apply_instruction_3() {
+        //         [Z]
+        //         [N]
+        //     [C] [D]
+        //     [M] [P]
+        //  1   2   3
+        let input = vec![vec![], vec!['M', 'C'], vec!['P', 'D', 'N', 'Z']];
+
+        // move 2 from 2 to 1
+        let instruction = Instruction {
+            amount: 2,
+            from: 2,
+            to: 1,
+        };
+
+        //         [Z]
+        //         [N]
+        // [M]     [D]
+        // [C]     [P]
+        //  1   2   3
+        let expected = vec![vec!['C', 'M'], vec![], vec!['P', 'D', 'N', 'Z']];
+
+        assert_eq!(instruction.apply(input), expected);
+    }
+
+    #[test]
+    fn test_apply_instruction_4() {
+        //         [Z]
+        //         [N]
+        // [M]     [D]
+        // [C]     [P]
+        //  1   2   3
+        let input = vec![vec!['C', 'M'], vec![], vec!['P', 'D', 'N', 'Z']];
+
+        // move 1 from 1 to 2
+        let instruction = Instruction {
+            amount: 1,
+            from: 1,
+            to: 2,
+        };
+
+        //         [Z]
+        //         [N]
+        //         [D]
+        // [C] [M] [P]
+        //  1   2   3
+        let expected = vec![vec!['C'], vec!['M'], vec!['P', 'D', 'N', 'Z']];
+
+        assert_eq!(instruction.apply(input), expected);
+    }
+}
