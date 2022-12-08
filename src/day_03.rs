@@ -88,7 +88,6 @@
 ///
 /// Find the item type that corresponds to the badges of each three-Elf group. What is the sum of
 /// the priorities of those item types?
-use itertools::Itertools;
 use std::collections::HashSet;
 
 const INPUT: &str = include_str!("../input/day_03");
