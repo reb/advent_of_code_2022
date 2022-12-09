@@ -70,6 +70,11 @@
 /// together and give the Elves the message CMZ.
 ///
 /// After the rearrangement procedure completes, what crate ends up on top of each stack?
+use lazy_static::lazy_static;
+use regex::Regex;
+use std::num::ParseIntError;
+use std::str::FromStr;
+
 const INPUT: &str = include_str!("../input/day_05");
 
 pub fn run() {
@@ -79,13 +84,51 @@ pub fn run() {
 
 type Stack = Vec<char>;
 
+#[derive(Debug, PartialEq)]
 struct Instruction {
     amount: usize,
     from: usize,
     to: usize,
 }
 
+#[derive(Debug, PartialEq)]
+enum ParseInstructionError {
+    ParseInt(ParseIntError),
+    Regex(String),
+}
+
+impl FromStr for Instruction {
+    type Err = ParseInstructionError;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        lazy_static! {
+            static ref LINE_EXPRESSION: Regex =
+                Regex::new(r"^move (\d) from (\d) to (\d)$").unwrap();
+        }
+        let captures = LINE_EXPRESSION
+            .captures(line)
+            .and_then(|cap| Some((cap.get(1), cap.get(2), cap.get(3))));
+        match captures {
+            Some((Some(amount), Some(from), Some(to))) => {
+                match Instruction::parse_str(amount.as_str(), from.as_str(), to.as_str()) {
+                    Err(e) => Err(ParseInstructionError::ParseInt(e)),
+                    Ok(i) => Ok(i),
+                }
+            }
+            _ => Err(ParseInstructionError::Regex("Couldn't match regex".into())),
+        }
+    }
+}
+
 impl Instruction {
+    fn parse_str(amount: &str, from: &str, to: &str) -> Result<Instruction, ParseIntError> {
+        Ok(Instruction {
+            amount: amount.parse()?,
+            from: from.parse()?,
+            to: to.parse()?,
+        })
+    }
+
     fn apply(&self, mut stacks: Vec<Stack>) -> Vec<Stack> {
         for _ in 0..self.amount {
             // moving a marked crate from the 'from' to the 'to' stack
@@ -101,6 +144,19 @@ impl Instruction {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_instruction_from_str() {
+        let input = "move 1 from 2 to 1";
+
+        let expected = Instruction {
+            amount: 1,
+            from: 2,
+            to: 1,
+        };
+
+        assert_eq!(Instruction::from_str(input), Ok(expected))
+    }
 
     #[test]
     fn test_apply_instruction_1() {
