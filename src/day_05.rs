@@ -78,7 +78,18 @@ use std::str::FromStr;
 const INPUT: &str = include_str!("../input/day_05");
 
 pub fn run() {
-    let (stacks, instructions) = load_input(INPUT);
+    let (mut stacks, instructions) = load_input(INPUT);
+
+    for instruction in instructions.iter() {
+        stacks = instruction.apply(stacks);
+    }
+
+    let top_crates: String = stacks.iter_mut().filter_map(Vec::pop).collect();
+
+    println!(
+        "Completing the rearrangement procedure the crates on top of each stack are: {}",
+        top_crates
+    );
 }
 
 type Stack = Vec<char>;
@@ -151,7 +162,7 @@ impl FromStr for Instruction {
     fn from_str(line: &str) -> Result<Self, Self::Err> {
         lazy_static! {
             static ref LINE_EXPRESSION: Regex =
-                Regex::new(r"^move (\d) from (\d) to (\d)$").unwrap();
+                Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
         }
         let captures = LINE_EXPRESSION
             .captures(line)
