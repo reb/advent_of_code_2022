@@ -78,8 +78,7 @@ use std::str::FromStr;
 const INPUT: &str = include_str!("../input/day_05");
 
 pub fn run() {
-    println!("Not implemented yet");
-    unimplemented!();
+    let (stacks, instructions) = load_input(INPUT);
 }
 
 type Stack = Vec<char>;
@@ -95,6 +94,55 @@ struct Instruction {
 enum ParseInstructionError {
     ParseInt(ParseIntError),
     Regex(String),
+}
+
+fn load_input(input: &str) -> (Vec<Stack>, Vec<Instruction>) {
+    let mut input_iter = input.split("\n\n");
+
+    let Some(stacks_input) = input_iter.next() else {
+        panic!("There was no stack input")
+    };
+    let stacks = load_stacks(stacks_input);
+
+    let Some(instructions_input) = input_iter.next() else {
+        panic!("There was no instructions input")
+    };
+    let instructions = instructions_input
+        .lines()
+        .map(Instruction::from_str)
+        .filter_map(Result::ok)
+        .collect();
+
+    (stacks, instructions)
+}
+
+fn load_stacks(input: &str) -> Vec<Stack> {
+    let mut stacks = input
+        .lines()
+        .flat_map(|line| {
+            line.chars().enumerate().filter_map(|(i, c)| {
+                if c == ' ' || c == '[' || c == ']' {
+                    None
+                } else {
+                    Some((i, c))
+                }
+            })
+        })
+        .fold(Vec::new(), |mut vec, (position, c)| {
+            let index = position / 4;
+            if vec.len() <= index {
+                vec.resize(index + 1, Vec::new());
+            }
+            let inner_vec = vec.get_mut(index).expect("The vec wasn't resized properly");
+            inner_vec.insert(0, c);
+            vec
+        });
+
+    for stack in stacks.iter_mut() {
+        // remove the index indicators
+        stack.remove(0);
+    }
+    stacks
 }
 
 impl FromStr for Instruction {
@@ -144,6 +192,15 @@ impl Instruction {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_load_stacks() {
+        let input = "     [D]\n [N] [C]\n [Z] [M] [P]\n  1   2   3";
+
+        let expected = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
+
+        assert_eq!(load_stacks(input), expected);
+    }
 
     #[test]
     fn test_instruction_from_str() {
