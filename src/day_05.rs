@@ -138,7 +138,7 @@ pub fn run() {
     let (mut stacks, instructions) = load_input(INPUT);
 
     for instruction in instructions.iter() {
-        stacks = instruction.apply(stacks);
+        stacks = instruction.apply_as_crate_mover_9000(stacks);
     }
 
     let top_crates: String = stacks.iter_mut().filter_map(Vec::pop).collect();
@@ -245,7 +245,7 @@ impl Instruction {
         })
     }
 
-    fn apply(&self, mut stacks: Vec<Stack>) -> Vec<Stack> {
+    fn apply_as_crate_mover_9000(&self, mut stacks: Vec<Stack>) -> Vec<Stack> {
         for _ in 0..self.amount {
             // moving a marked crate from the 'from' to the 'to' stack
             let marked_crate = stacks[self.from - 1]
@@ -284,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn test_apply_instruction_1() {
+    fn test_apply_as_crane_mover_9000_instruction_1() {
         //     [D]
         // [N] [C]
         // [Z] [M] [P]
@@ -304,11 +304,11 @@ mod tests {
         //  1   2   3
         let expected = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
 
-        assert_eq!(instruction.apply(input), expected);
+        assert_eq!(instruction.apply_as_crate_mover_9000(input), expected);
     }
 
     #[test]
-    fn test_apply_instruction_2() {
+    fn test_apply_as_crane_mover_9000_instruction_2() {
         // [D]
         // [N] [C]
         // [Z] [M] [P]
@@ -329,11 +329,11 @@ mod tests {
         //  1   2   3
         let expected = vec![vec![], vec!['M', 'C'], vec!['P', 'D', 'N', 'Z']];
 
-        assert_eq!(instruction.apply(input), expected);
+        assert_eq!(instruction.apply_as_crate_mover_9000(input), expected);
     }
 
     #[test]
-    fn test_apply_instruction_3() {
+    fn test_apply_as_crane_mover_9000_instruction_3() {
         //         [Z]
         //         [N]
         //     [C] [D]
@@ -355,11 +355,11 @@ mod tests {
         //  1   2   3
         let expected = vec![vec!['C', 'M'], vec![], vec!['P', 'D', 'N', 'Z']];
 
-        assert_eq!(instruction.apply(input), expected);
+        assert_eq!(instruction.apply_as_crate_mover_9000(input), expected);
     }
 
     #[test]
-    fn test_apply_instruction_4() {
+    fn test_apply_as_crane_mover_9000_instruction_4() {
         //         [Z]
         //         [N]
         // [M]     [D]
@@ -381,6 +381,6 @@ mod tests {
         //  1   2   3
         let expected = vec![vec!['C'], vec!['M'], vec!['P', 'D', 'N', 'Z']];
 
-        assert_eq!(instruction.apply(input), expected);
+        assert_eq!(instruction.apply_as_crate_mover_9000(input), expected);
     }
 }
