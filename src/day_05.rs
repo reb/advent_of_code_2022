@@ -135,17 +135,30 @@ use std::str::FromStr;
 const INPUT: &str = include_str!("../input/day_05");
 
 pub fn run() {
-    let (mut stacks, instructions) = load_input(INPUT);
+    let (stacks, instructions) = load_input(INPUT);
 
+    let mut stacks_9000 = stacks.clone();
     for instruction in instructions.iter() {
-        stacks = instruction.apply_as_crate_mover_9000(stacks);
+        stacks_9000 = instruction.apply_as_crate_mover_9000(stacks_9000);
     }
 
-    let top_crates: String = stacks.iter_mut().filter_map(Vec::pop).collect();
+    let top_crates_9000: String = stacks_9000.iter_mut().filter_map(Vec::pop).collect();
 
     println!(
         "Completing the rearrangement procedure the crates on top of each stack are: {}",
-        top_crates
+        top_crates_9000
+    );
+
+    let mut stacks_9001 = stacks.clone();
+    for instruction in instructions.iter() {
+        stacks_9001 = instruction.apply_as_crate_mover_9001(stacks_9001);
+    }
+
+    let top_crates_9001: String = stacks_9001.iter_mut().filter_map(Vec::pop).collect();
+
+    println!(
+        "Completing the rearrangement procedure with the CraneMover 9001 instructions, the top crates are: {}",
+        top_crates_9001
     );
 }
 
@@ -251,6 +264,23 @@ impl Instruction {
             let marked_crate = stacks[self.from - 1]
                 .pop()
                 .expect("There was no crate left in the stack");
+            stacks[self.to - 1].push(marked_crate);
+        }
+        stacks
+    }
+
+    fn apply_as_crate_mover_9001(&self, mut stacks: Vec<Stack>) -> Vec<Stack> {
+        let mut buffer = Vec::new();
+        for _ in 0..self.amount {
+            // moving a marked crate from the 'from' to the buffer
+            let marked_crate = stacks[self.from - 1]
+                .pop()
+                .expect("There was no crate left in the stack");
+            buffer.push(marked_crate);
+        }
+        for _ in 0..buffer.len() {
+            // put the buffer back in the stacks
+            let marked_crate = buffer.pop().expect("There was no crate left in the buffer");
             stacks[self.to - 1].push(marked_crate);
         }
         stacks
@@ -382,5 +412,106 @@ mod tests {
         let expected = vec![vec!['C'], vec!['M'], vec!['P', 'D', 'N', 'Z']];
 
         assert_eq!(instruction.apply_as_crate_mover_9000(input), expected);
+    }
+
+    #[test]
+    fn test_apply_as_crane_mover_9001_instruction_1() {
+        //     [D]
+        // [N] [C]
+        // [Z] [M] [P]
+        //  1   2   3
+        let input = vec![vec!['Z', 'N'], vec!['M', 'C', 'D'], vec!['P']];
+
+        // move 1 from 2 to 1
+        let instruction = Instruction {
+            amount: 1,
+            from: 2,
+            to: 1,
+        };
+
+        // [D]
+        // [N] [C]
+        // [Z] [M] [P]
+        //  1   2   3
+        let expected = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
+
+        assert_eq!(instruction.apply_as_crate_mover_9001(input), expected);
+    }
+
+    #[test]
+    fn test_apply_as_crane_mover_9001_instruction_2() {
+        // [D]
+        // [N] [C]
+        // [Z] [M] [P]
+        //  1   2   3
+        let input = vec![vec!['Z', 'N', 'D'], vec!['M', 'C'], vec!['P']];
+
+        // move 3 from 1 to 3
+        let instruction = Instruction {
+            amount: 3,
+            from: 1,
+            to: 3,
+        };
+
+        //         [D]
+        //         [N]
+        //     [C] [Z]
+        //     [M] [P]
+        //  1   2   3
+        let expected = vec![vec![], vec!['M', 'C'], vec!['P', 'Z', 'N', 'D']];
+
+        assert_eq!(instruction.apply_as_crate_mover_9001(input), expected);
+    }
+
+    #[test]
+    fn test_apply_as_crane_mover_9001_instruction_3() {
+        //         [D]
+        //         [N]
+        //     [C] [Z]
+        //     [M] [P]
+        //  1   2   3
+        let input = vec![vec![], vec!['M', 'C'], vec!['P', 'Z', 'N', 'D']];
+
+        // move 2 from 2 to 1
+        let instruction = Instruction {
+            amount: 2,
+            from: 2,
+            to: 1,
+        };
+
+        //         [D]
+        //         [N]
+        // [C]     [Z]
+        // [M]     [P]
+        //  1   2   3
+        let expected = vec![vec!['M', 'C'], vec![], vec!['P', 'Z', 'N', 'D']];
+
+        assert_eq!(instruction.apply_as_crate_mover_9001(input), expected);
+    }
+
+    #[test]
+    fn test_apply_as_crane_mover_9001_instruction_4() {
+        //         [D]
+        //         [N]
+        // [C]     [Z]
+        // [M]     [P]
+        //  1   2   3
+        let input = vec![vec!['M', 'C'], vec![], vec!['P', 'Z', 'N', 'D']];
+
+        // move 1 from 1 to 2
+        let instruction = Instruction {
+            amount: 1,
+            from: 1,
+            to: 2,
+        };
+
+        //         [D]
+        //         [N]
+        //         [Z]
+        // [M] [C] [P]
+        //  1   2   3
+        let expected = vec![vec!['M'], vec!['C'], vec!['P', 'Z', 'N', 'D']];
+
+        assert_eq!(instruction.apply_as_crate_mover_9001(input), expected);
     }
 }
